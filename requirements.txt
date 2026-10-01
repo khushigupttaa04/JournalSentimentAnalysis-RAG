@@ -1,0 +1,8 @@
+pandas
+numpy
+faiss-cpu
+sentence-transformers
+transformers
+torch
+kagglehub
+accelerate
