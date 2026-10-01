@@ -17,7 +17,8 @@ flowchart LR
 
 ## Data
 
-Blog Authorship Corpus (Kaggle, `rtatman/blog-authorship-corpus`), downloaded with `kagglehub`. A sample of 50 bloggers with 30+ posts each, capped at 100 posts per blogger: **2,563 posts** with real dates and writer IDs.
+Blog Authorship Corpus (Kaggle, `rtatman/blog-authorship-corpus`), downloaded with `kagglehub`. A sample of 500 bloggers with 30+ posts each, capped at 100 posts per blogger: **27,999 posts** with real dates and writer IDs. Each writer gets their own FAISS index, so retrieval only ever searches that writer's posts.
+
 
 ## Design choices
 
@@ -29,29 +30,29 @@ Blog Authorship Corpus (Kaggle, `rtatman/blog-authorship-corpus`), downloaded wi
 
 | Metric | Result |
 |---|---|
-| Emotion agreement, retrieved past posts | 0.373 |
-| Emotion agreement, random past posts (same writer) | 0.309 |
-| Queries evaluated | 1,192 |
-| Retrieval coverage (100 sampled posts) | 51% |
+| Emotion agreement, retrieved past posts | 0.319 |
+| Emotion agreement, random past posts (same writer) | 0.260 |
+| Queries evaluated | 13,357 |
+| Retrieval coverage (100 sampled posts) | 45% |
 | Copy rate, FLAN-T5 (initial tests, 20 samples) | 90% |
 | Copy rate, Qwen2.5-3B-Instruct (100 posts) | 0% |
-| Invented past events when nothing was retrieved | 0 of 49 |
-| First-person voice slips | 0 of 100 |
+| Invented past events when nothing was retrieved | 0 of 55 |
+| First-person voice slips | 4 of 100 |
 
 Copy rate is the share of reflections where more than 50% of 5-word sequences appear verbatim in the post or retrieved posts.
 
-## Threshold analysis
+## Threshold analysis (50-blogger sample)
 
 | MIN_SIM | Queries with retrieval | Retrieved | Random | Gap | Relative lift |
 |---|---|---|---|---|---|
 | 0.40 | 1,418 | 0.348 | 0.297 | 5.1 pts | 17% |
 | **0.45** | 1,192 | 0.373 | 0.309 | 6.4 pts | **21%** |
 
-0.45 was chosen for higher retrieval precision. Empty retrievals are handled safely by the prompt, while weak matches push the model to force connections that aren't there.
+0.45 was chosen for higher retrieval precision. Empty retrievals are handled safely by the prompt, while weak matches push the model to force connections that aren't there. Scaling to 500 bloggers kept the lift at 23%.
 
 ## Key findings
 
-- Retrieval beats a same-writer random baseline by 6.4 points (about 21% relative), even though a writer's posts already resemble each other.
+- Retrieval beats a same-writer random baseline by 5.9 points (about 23% relative) across 13,357 queries, even though a writer's posts already resemble each other.
 - FLAN-T5 mostly copied its input back. An instruction-tuned chat model removed copying entirely.
 - Dropping the "past entries" section from the prompt when nothing is retrieved stopped the model from inventing a history.
 
