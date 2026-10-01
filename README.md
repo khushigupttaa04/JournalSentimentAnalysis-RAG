@@ -33,12 +33,21 @@ Blog Authorship Corpus (Kaggle, `rtatman/blog-authorship-corpus`), downloaded wi
 | Emotion agreement, random past posts (same writer) | 0.309 |
 | Queries evaluated | 1,192 |
 | Retrieval coverage (100 sampled posts) | 51% |
-| Copy rate, FLAN-T5 (initial tests) | 90% |
+| Copy rate, FLAN-T5 (initial tests, 20 samples) | 90% |
 | Copy rate, Qwen2.5-3B-Instruct (100 posts) | 0% |
 | Invented past events when nothing was retrieved | 0 of 49 |
 | First-person voice slips | 0 of 100 |
 
 Copy rate is the share of reflections where more than 50% of 5-word sequences appear verbatim in the post or retrieved posts.
+
+## Threshold analysis
+
+| MIN_SIM | Queries with retrieval | Retrieved | Random | Gap | Relative lift |
+|---|---|---|---|---|---|
+| 0.40 | 1,418 | 0.348 | 0.297 | 5.1 pts | 17% |
+| **0.45** | 1,192 | 0.373 | 0.309 | 6.4 pts | **21%** |
+
+0.45 was chosen for higher retrieval precision. Empty retrievals are handled safely by the prompt, while weak matches push the model to force connections that aren't there.
 
 ## Key findings
 
@@ -49,7 +58,7 @@ Copy rate is the share of reflections where more than 50% of 5-word sequences ap
 ## Limitations
 
 - The emotion model was trained on short text, so labels are noisy on long or sarcastic posts, which caps the agreement scores.
-- About a quarter of reflections still open with "Reflecting on…", a stylistic habit of the model.
+- About a quarter of reflections still open with "Reflecting on...", a stylistic habit of the model.
 - Blog dates are coarse, so same-day posts are excluded from retrieval.
 - The corpus is from 2004, and many writers are teenagers.
 
@@ -59,4 +68,13 @@ Open `notebooks/rag_sentiment_analyzer.ipynb` in Google Colab with a T4 GPU and 
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Repository structure
+
+```
+notebooks/rag_sentiment_analyzer.ipynb   full pipeline
+reports/sample_report.txt                100 generated reflections
+requirements.txt
+README.md
 ```
